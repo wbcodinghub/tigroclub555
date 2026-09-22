@@ -1,0 +1,58 @@
+/* ---------------------------------------------------------------------
+   Design tokens. Keeping every color here (not scattered inline) means
+   swapping the theme later is a one-file change.
+   --------------------------------------------------------------------- */
+:root {
+  --color-bg: #f7f7fb;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f2f3f8;
+  --color-border: #ececf3;
+  --color-text: #16161d;
+  --color-text-muted: #71758a;
+
+  --color-accent: #ee3b3b; /* the red pill from the reference bar */
+  --color-on-accent: #ffffff;
+
+  --color-nav-inactive: #9a9db0;
+  --color-nav-inactive-hover: #4c4f63;
+
+  --nav-height-mobile: 78px;
+  --nav-height-desktop: 64px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Bengali",
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a {
+  color: inherit;
+}
+
+/* Page content area: padding keeps it clear of the nav bar, which is
+   fixed at the bottom on phones and at the top on wide screens. */
+.page {
+  min-height: 100dvh;
+  padding-bottom: calc(var(--nav-height-mobile) + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 900px) {
+  .page {
+    padding-bottom: 0;
+    padding-top: var(--nav-height-desktop);
+  }
+}
