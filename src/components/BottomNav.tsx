@@ -15,9 +15,15 @@ import styles from "./BottomNav.module.css";
  * and restyled purely with CSS media queries (see BottomNav.module.css),
  * so only one nav ever exists in the DOM.
  *
- * Icons are plain .svg files in /public/icons/ (see src/config/navigation.ts)
+ * Icons are plain .svg files in /public/ (see src/config/navigation.ts)
  * — each tab has an active and an inactive file, and we swap the <img> src
  * based on the current route instead of tinting one shared component.
+ *
+ * Mobile long-press menu: onContextMenu is blocked and the <img> is set to
+ * pointer-events: none (in BottomNav.module.css, class .icon) + draggable
+ * false, so a long-press on a tab passes straight through to the <Link>
+ * instead of Chrome treating it as an image/link and popping up its own
+ * "Open image / Download link / Share link" menu.
  */
 export default function BottomNav() {
   const pathname = usePathname();
@@ -33,6 +39,7 @@ export default function BottomNav() {
                 href={href}
                 className={`${styles.link} ${isActive ? styles.active : ""}`}
                 aria-current={isActive ? "page" : undefined}
+                onContextMenu={(e) => e.preventDefault()}
               >
                 <img
                   src={isActive ? icon : iconInactive}
@@ -40,6 +47,7 @@ export default function BottomNav() {
                   className={styles.icon}
                   width={24}
                   height={24}
+                  draggable={false}
                 />
                 <span className={styles.label}>{label}</span>
               </Link>
