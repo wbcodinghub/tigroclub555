@@ -6,21 +6,21 @@ import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // 1. DevTools screen resize detect kore about:blank -e niye jabe
-    const detectDevTools = () => {
-      const threshold = 160;
-      const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-      const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    // ১. DevTools ওপেন করলে ব্রাউজার ফ্রিজ করার জন্য Debugger লুপ
+    const blockDevTools = () => {
+      const startTime = performance.now();
+      debugger;
+      const endTime = performance.now();
 
-      if (widthThreshold || heightThreshold) {
-        window.location.href = 'about:blank';
+      if (endTime - startTime > 100) {
+        console.clear();
       }
     };
 
-    // 2. Right Click bondho kora
+    // ২. মাউসের ডানদিকের ক্লিক (Right Click / Context Menu) পুরোপুরি বন্ধ রাখা
     const preventContextMenu = (e: MouseEvent) => e.preventDefault();
 
-    // 3. F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U shortcut bondho kora
+    // ৩. ইন্সপেক্ট খোলার কিবোর্ড শর্টকাট (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U) বন্ধ রাখা
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === 'F12' ||
@@ -28,11 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         (e.ctrlKey && e.key.toUpperCase() === 'U')
       ) {
         e.preventDefault();
-        window.location.href = 'about:blank';
       }
     };
 
-    const interval = setInterval(detectDevTools, 500);
+    const interval = setInterval(blockDevTools, 500);
     window.addEventListener('contextmenu', preventContextMenu);
     window.addEventListener('keydown', preventShortcuts);
 
