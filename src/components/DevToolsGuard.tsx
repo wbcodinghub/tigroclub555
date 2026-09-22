@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 export default function DevToolsGuard() {
   useEffect(() => {
-    const threshold = 160;
+    const threshold = 60; // ১৬০ থেকে কমিয়ে ৬০ করা হলো
 
     const check = () => {
       const widthDiff = window.outerWidth - window.innerWidth;
@@ -16,6 +16,7 @@ export default function DevToolsGuard() {
     };
 
     const interval = setInterval(check, 500);
+    check(); // পেজ লোড হওয়ার সাথে সাথে একবার চেক
     return () => clearInterval(interval);
   }, []);
 
