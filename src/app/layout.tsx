@@ -6,18 +6,18 @@ import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // ১. DevTools ওপেন করলেই কোড আটকে/ফ্রিজ করে রাখার Debugger লুপ
-    const blockDevTools = () => {
-      const startTime = performance.now();
-      debugger;
-      const endTime = performance.now();
+    // 1. DevTools open hole 'about:blank' -e niye jabe
+    const detectDevTools = () => {
+      const threshold = 160;
+      const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+      const heightThreshold = window.outerHeight - window.innerHeight > threshold;
 
-      if (endTime - startTime > 100) {
-        console.clear();
+      if (widthThreshold || heightThreshold) {
+        window.location.href = 'about:blank';
       }
     };
 
-    // ২. F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U শর্টকাট ব্লক
+    // 2. DevTools open korar key shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === 'F12' ||
@@ -25,10 +25,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         (e.ctrlKey && e.key.toUpperCase() === 'U')
       ) {
         e.preventDefault();
+        window.location.href = 'about:blank';
       }
     };
 
-    const interval = setInterval(blockDevTools, 500);
+    const interval = setInterval(detectDevTools, 500);
     window.addEventListener('keydown', preventShortcuts);
 
     return () => {
