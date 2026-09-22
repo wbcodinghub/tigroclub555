@@ -21,7 +21,7 @@
 .list {
   list-style: none;
   margin: 0;
-  padding: 8px 10px;
+  padding: 3px 10px; /* উচ্চতা কমাতে প্যাডিং কমানো হয়েছে (আগে ছিল 8px) */
   display: flex;
   align-items: stretch;
   justify-content: space-between;
@@ -41,8 +41,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 10px 6px;
+  gap: 3px;
+  padding: 5px 6px; /* লিংক আইটেমের ওপর-নিচের জায়গা কমানো হয়েছে (আগে ছিল 10px 6px) */
   border-radius: 16px;
   text-decoration: none;
   color: var(--color-nav-inactive);
@@ -51,13 +51,13 @@
 }
 
 .icon {
-  width: 26px;
-  height: 26px;
+  width: 24px; /* আইকন সাইজ ২ পিক্সেল কমানো হয়েছে (আগে ছিল 26px) */
+  height: 24px;
   flex-shrink: 0;
 }
 
 .label {
-  font-size: 13px;
+  font-size: 12px; /* টেক্সট যাতে ভারসাম্যপূর্ণ দেখায় (আগে ছিল 13px) */
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
@@ -97,7 +97,7 @@
 
   .list {
     max-width: 960px;
-    padding: 10px 16px;
+    padding: 5px 16px; /* ডেস্কটপেও উপর-নিচের প্যাডিং কমানো হয়েছে (আগে ছিল 10px 16px) */
     gap: 4px;
   }
 
@@ -107,11 +107,11 @@
 
   .link {
     flex-direction: row;
-    padding: 10px 18px;
+    padding: 5px 18px; /* আগে ছিল 10px 18px */
   }
 
   .icon {
-    width: 22px;
-    height: 22px;
+    width: 20px; /* আগে ছিল 22px */
+    height: 20px;
   }
 }
