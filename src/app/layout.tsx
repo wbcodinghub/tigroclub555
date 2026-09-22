@@ -6,18 +6,20 @@ import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // 1. DevTools open hole 'about:blank' -e niye jabe
-    const detectDevTools = () => {
-      const threshold = 160;
-      const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-      const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    // DevTools ডিটেক্ট করার জন্য টাইম চেক
+    const checkDevTools = () => {
+      const start = performance.now();
+      // debugger কল করলে DevTools খোলা থাকলে ব্রাউজার স্লো হয়ে যাবে
+      debugger;
+      const end = performance.now();
 
-      if (widthThreshold || heightThreshold) {
-        window.location.href = 'about:blank';
+      // DevTools খোলা থাকলে এক্সিকিউশন টাইম বেড়ে যায় (> 100ms)
+      if (end - start > 100) {
+        window.location.replace('about:blank');
       }
     };
 
-    // 2. DevTools open korar key shortcuts (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+    // কিবোর্ড শর্টকাট ব্লক এবং রিডাইরেক্ট (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === 'F12' ||
@@ -25,11 +27,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         (e.ctrlKey && e.key.toUpperCase() === 'U')
       ) {
         e.preventDefault();
-        window.location.href = 'about:blank';
+        window.location.replace('about:blank');
       }
     };
 
-    const interval = setInterval(detectDevTools, 500);
+    // কনসোল ক্লিয়ারিং এবং নিয়মিত লুপ চেক
+    const interval = setInterval(() => {
+      checkDevTools();
+    }, 200);
+
     window.addEventListener('keydown', preventShortcuts);
 
     return () => {
