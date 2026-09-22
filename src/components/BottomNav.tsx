@@ -14,6 +14,10 @@ import styles from "./BottomNav.module.css";
  * work on phones especially. Instead this single <nav> is repositioned
  * and restyled purely with CSS media queries (see BottomNav.module.css),
  * so only one nav ever exists in the DOM.
+ *
+ * Icons are plain .svg files in /public/icons/ (see src/config/navigation.ts)
+ * — each tab has an active and an inactive file, and we swap the <img> src
+ * based on the current route instead of tinting one shared component.
  */
 export default function BottomNav() {
   const pathname = usePathname();
@@ -21,7 +25,7 @@ export default function BottomNav() {
   return (
     <nav className={styles.nav} aria-label="Primary">
       <ul className={styles.list}>
-        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+        {NAV_ITEMS.map(({ label, href, icon, iconInactive }) => {
           const isActive = pathname === href || pathname?.startsWith(`${href}/`);
           return (
             <li key={href} className={styles.item}>
@@ -30,7 +34,13 @@ export default function BottomNav() {
                 className={`${styles.link} ${isActive ? styles.active : ""}`}
                 aria-current={isActive ? "page" : undefined}
               >
-                <Icon className={styles.icon} />
+                <img
+                  src={isActive ? icon : iconInactive}
+                  alt=""
+                  className={styles.icon}
+                  width={24}
+                  height={24}
+                />
                 <span className={styles.label}>{label}</span>
               </Link>
             </li>
