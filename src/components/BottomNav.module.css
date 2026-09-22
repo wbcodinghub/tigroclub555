@@ -1,0 +1,117 @@
+/* ---------------------------------------------------------------------
+   Bottom nav — sized/shaped after the reference bar (rounded active
+   pill behind the current tab). Re-themed to the "white flavor" the
+   app uses: light bar, muted icons at rest, red pill + white icon
+   when active.
+   --------------------------------------------------------------------- */
+
+.nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  box-shadow: 0 -2px 16px rgba(20, 20, 40, 0.06);
+  /* keep the bar clear of the home-indicator / gesture area on phones */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 3px 10px; /* উচ্চতা কমাতে প্যাডিং কমানো হয়েছে (আগে ছিল 8px) */
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.item {
+  flex: 1 1 0;
+  display: flex;
+}
+
+.link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 6px; /* লিংক আইটেমের ওপর-নিচের জায়গা কমানো হয়েছে (আগে ছিল 10px 6px) */
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--color-nav-inactive);
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon {
+  width: 24px; /* আইকন সাইজ ২ পিক্সেল কমানো হয়েছে (আগে ছিল 26px) */
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 12px; /* টেক্সট যাতে ভারসাম্যপূর্ণ দেখায় (আগে ছিল 13px) */
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.active {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  box-shadow: 0 6px 14px rgba(238, 59, 59, 0.32);
+}
+
+/* Pointer devices (desktop/trackpad): a light hover cue on inactive tabs. */
+@media (hover: hover) and (pointer: fine) {
+  .link:not(.active):hover {
+    background: var(--color-surface-hover);
+    color: var(--color-nav-inactive-hover);
+  }
+}
+
+.link:active {
+  transform: scale(0.96);
+}
+
+/* ---------------------------------------------------------------------
+   Desktop / wide viewports: same single <nav>, repositioned to a
+   centered top bar instead of a full-width bottom bar. No second
+   nav is rendered — only layout properties change here.
+   --------------------------------------------------------------------- */
+@media (min-width: 900px) {
+  .nav {
+    top: 0;
+    bottom: auto;
+    border-top: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0;
+  }
+
+  .list {
+    max-width: 960px;
+    padding: 5px 16px; /* ডেস্কটপেও উপর-নিচের প্যাডিং কমানো হয়েছে (আগে ছিল 10px 16px) */
+    gap: 4px;
+  }
+
+  .item {
+    flex: 0 0 auto;
+  }
+
+  .link {
+    flex-direction: row;
+    padding: 5px 18px; /* আগে ছিল 10px 18px */
+  }
+
+  .icon {
+    width: 20px; /* আগে ছিল 22px */
+    height: 20px;
+  }
+}
