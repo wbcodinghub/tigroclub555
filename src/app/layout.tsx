@@ -16,7 +16,7 @@ export default function RootLayout({
       }
     };
 
-    // ১. কিবোর্ড শর্টকাট চেক
+    // ১. কিবোর্ড শর্টকাট ব্লক করা (F12, Ctrl+Shift+I/J/C, Ctrl+U)
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === "F12" ||
@@ -28,26 +28,18 @@ export default function RootLayout({
       }
     };
 
-    // ২. ডিটেক্ট করার জন্য উইন্ডো সাইজ ও ডিবাগারের সমন্বিত পদ্ধতি
-    const checkDevTools = () => {
-      // ব্রাউজারের উইন্ডো হাইট বা উইডথ যদি ভেতরের কন্টেন্ট থেকে অস্বাভাবিকভাবে ছোট হয় (Inspect ওপেন হলে যা ঘটে)
-      const threshold = 160;
-      if (
-        window.outerWidth - window.innerWidth > threshold ||
-        window.outerHeight - window.innerHeight > threshold
-      ) {
-        redirect();
-      }
+    // ২. মাউসের রাইট-ক্লিক ব্লক করা (যাতে কেউ মেনু থেকে Inspect ওপেন করতে না পারে)
+    const preventContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      redirect();
     };
 
     window.addEventListener("keydown", preventShortcuts);
-    
-    // প্রতি ১ সেকেন্ড পর পর Inspect ওপেন হয়েছে কি না চেক করবে
-    const interval = setInterval(checkDevTools, 1000);
+    window.addEventListener("contextmenu", preventContextMenu);
 
     return () => {
       window.removeEventListener("keydown", preventShortcuts);
-      clearInterval(interval);
+      window.removeEventListener("contextmenu", preventContextMenu);
     };
   }, []);
 
