@@ -1,78 +1,65 @@
-'use client';
+useEffect(() => {
+  const widthThreshold = 50;   // width devtools ছাড়া প্রায় অপরিবর্তিত থাকে
+  const heightThreshold = 200; // height-এ ব্রাউজার chrome (address bar, tabs) নিজেই ৭০-১০০px নেয়, তাই বেশি রাখা লাগবে
+  let redirected = false;
 
-import { useEffect } from "react";
-import BottomNav from "@/components/BottomNav";
-import "./globals.css";
+  const redirect = () => {
+    if (!redirected) {
+      redirected = true;
+      window.location.replace('about:blank');
+    }
+  };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    const threshold = 60;
-    let redirected = false;
+  const checkSize = () => {
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
+    if (widthDiff > widthThreshold || heightDiff > heightThreshold) {
+      redirect();
+    }
+  };
 
-    const redirect = () => {
-      if (!redirected) {
-        redirected = true;
-        window.location.replace('about:blank');
-      }
-    };
+  const checkTiming = () => {
+    const start = performance.now();
+    // eslint-disable-next-line no-debugger
+    debugger;
+    const end = performance.now();
+    if (end - start > 100) {
+      redirect();
+    }
+  };
 
-    // পদ্ধতি ১: সাইজ চেক (DevTools ডক করা থাকলে ধরে)
-    const checkSize = () => {
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      if (widthDiff > threshold || heightDiff > threshold) {
-        redirect();
-      }
-    };
-
-    // পদ্ধতি ২: টাইমিং চেক (আন-ডক করা DevTools ধরে)
-    const checkTiming = () => {
-      const start = performance.now();
-      // eslint-disable-next-line no-debugger
-      debugger;
-      const end = performance.now();
-      if (end - start > 100) {
-        redirect();
-      }
-    };
+  // পেজ লোডের সাথে সাথে চেক না করে ২ সেকেন্ড পর থেকে চেক শুরু
+  const startTimeout = setTimeout(() => {
+    checkSize();
+    checkTiming();
 
     const interval = setInterval(() => {
       checkSize();
       checkTiming();
-    }, 1000); // ২০০ms থেকে বাড়িয়ে ১০০০ms করা হলো — বারবার freeze এড়াতে
+    }, 1000);
 
-    checkSize(); // পেজ লোডেই একবার
+    // cleanup-এর জন্য interval রেফারেন্স বাইরে রাখা লাগবে
+    (window as any).__devToolsInterval = interval;
+  }, 2000);
 
-    const preventShortcuts = (e: KeyboardEvent) => {
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === 'U')
-      ) {
-        e.preventDefault();
-        redirect();
-      }
-    };
+  const preventShortcuts = (e: KeyboardEvent) => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && e.key.toUpperCase() === 'U')
+    ) {
+      e.preventDefault();
+      redirect();
+    }
+  };
 
-    window.addEventListener('keydown', preventShortcuts);
+  window.addEventListener('keydown', preventShortcuts);
 
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('keydown', preventShortcuts);
-    };
-  }, []);
-
-  return (
-    <html lang="en">
-      <head>
-        <title>Lottery</title>
-        <meta name="description" content="Lottery" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-      </head>
-      <body>
-        <div className="page">{children}</div>
-        <BottomNav />
-      </body>
-    </html>
-  );
-}
+  return () => {
+    clearTimeout(startTimeout);
+    if ((window as any).__devToolsInterval) {
+      clearInterval((window as any).__devToolsInterval);
+    }
+    window.removeEventListener('keydown', preventShortcuts);
+  };
+}, []);
