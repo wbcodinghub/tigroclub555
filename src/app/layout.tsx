@@ -7,7 +7,7 @@ useEffect(() => {
     }
   };
 
-  // মেথড ১: সাইজ চেক (docked DevTools ধরে, responsive mode ধরে না)
+  // সাইজ চেক (docked DevTools ধরে)
   const widthThreshold = 160;
   const heightThreshold = 160;
   const checkSize = () => {
@@ -16,29 +16,10 @@ useEffect(() => {
     return widthDiff > widthThreshold || heightDiff > heightThreshold;
   };
 
-  // মেথড ২: console.log getter ট্রিক (Console প্যানেল খোলা থাকলে ধরে —
-  // responsive mode সহ প্রায় সব অবস্থাতেই কাজ করে)
-  let consoleOpened = false;
-  const probe = new Image();
-  Object.defineProperty(probe, 'id', {
-    get() {
-      consoleOpened = true;
-      return '';
-    },
-  });
-  const checkConsole = () => {
-    consoleOpened = false;
-    console.log('%c', probe);
-    console.clear();
-    return consoleOpened;
-  };
-
   let hitCount = 0;
   const runChecks = () => {
-    const triggered = checkSize() || checkConsole();
-    if (triggered) {
+    if (checkSize()) {
       hitCount++;
-      // পরপর ২ বার ট্রিগার হলেই রিডাইরেক্ট — একবারের false positive এড়াতে
       if (hitCount >= 2) redirect();
     } else {
       hitCount = 0;
