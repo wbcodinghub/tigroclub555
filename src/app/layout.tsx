@@ -1,102 +1,50 @@
-"use client";
-
-import { useEffect } from "react";
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  useEffect(() => {
-    let redirected = false;
-
-    const goBlank = () => {
-      if (redirected) return;
-
+useEffect(() => {
+  let redirected = false;
+  const redirect = () => {
+    if (!redirected) {
       redirected = true;
-      window.location.replace("about:blank");
-    };
+      window.location.replace('about:blank');
+    }
+  };
 
-    // ------------------------------------
-    // Detect opened DevTools
-    // ------------------------------------
-    let lastTime = performance.now();
+  // ১. শতভাগ কার্যকর DevTools ডিটেক্টর (Debugger Time Trap)
+  const detectDevTools = () => {
+    const start = performance.now();
+    // DevTools খোলা থাকলে ব্রাউজার পজ হবে, ফলে সময় ১০ মিলি-সেকেন্ডের বেশি লেগে যাবে
+    debugger; 
+    const end = performance.now();
 
-    const detectDevTools = () => {
-      const start = performance.now();
+    if (end - start > 100) {
+      redirect();
+    }
+  };
 
-      // debugger pauses here when DevTools debugger
-      // is attached/open in many Chromium cases.
-      debugger;
+  // প্রতি ১ সেকেন্ড পরপর চেক করবে
+  const interval = setInterval(detectDevTools, 1000);
 
-      const elapsed = performance.now() - start;
+  // ২. কী-বোর্ড শর্টকাট ব্লক
+  const preventShortcuts = (e: KeyboardEvent) => {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) ||
+      (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
+    ) {
+      e.preventDefault();
+      redirect();
+    }
+  };
 
-      if (elapsed > 100) {
-        goBlank();
-      }
+  // ৩. রাইট-ক্লিক (Inspect Element) ব্লক
+  const preventContextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+  };
 
-      lastTime = performance.now();
-    };
+  window.addEventListener('keydown', preventShortcuts);
+  window.addEventListener('contextmenu', preventContextMenu);
 
-    const devToolsTimer = window.setInterval(
-      detectDevTools,
-      1000
-    );
-
-    // ------------------------------------
-    // F12 / DevTools shortcuts
-    // ------------------------------------
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toUpperCase();
-
-      // F12
-      if (e.key === "F12") {
-        e.preventDefault();
-        e.stopPropagation();
-        goBlank();
-        return;
-      }
-
-      // Ctrl + Shift + I/J/C
-      if (
-        e.ctrlKey &&
-        e.shiftKey &&
-        ["I", "J", "C"].includes(key)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        goBlank();
-        return;
-      }
-
-      // Ctrl + U
-      if (e.ctrlKey && key === "U") {
-        e.preventDefault();
-        e.stopPropagation();
-        goBlank();
-      }
-    };
-
-    window.addEventListener(
-      "keydown",
-      handleKeyDown,
-      true
-    );
-
-    return () => {
-      window.clearInterval(devToolsTimer);
-
-      window.removeEventListener(
-        "keydown",
-        handleKeyDown,
-        true
-      );
-    };
-  }, []);
-
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}
+  return () => {
+    clearInterval(interval);
+    window.removeEventListener('keydown', preventShortcuts);
+    window.removeEventListener('contextmenu', preventContextMenu);
+  };
+}, []);
