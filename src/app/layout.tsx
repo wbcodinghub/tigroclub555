@@ -16,31 +16,7 @@ export default function RootLayout({
       }
     };
 
-    // সাইজ চেক (docked DevTools ধরে)
-    const widthThreshold = 160;
-    const heightThreshold = 160;
-    const checkSize = () => {
-      const widthDiff = window.outerWidth - window.innerWidth;
-      const heightDiff = window.outerHeight - window.innerHeight;
-      return widthDiff > widthThreshold || heightDiff > heightThreshold;
-    };
-
-    let hitCount = 0;
-    const runChecks = () => {
-      if (checkSize()) {
-        hitCount++;
-        if (hitCount >= 2) redirect();
-      } else {
-        hitCount = 0;
-      }
-    };
-
-    const startTimeout = setTimeout(() => {
-      runChecks();
-      const interval = setInterval(runChecks, 1000);
-      (window as any).__devToolsInterval = interval;
-    }, 3000);
-
+    // ১. কিবোর্ড শর্টকাট প্রিভেন্ট করা (F12, Ctrl+Shift+I/J/C, Ctrl+U)
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === "F12" ||
@@ -51,12 +27,19 @@ export default function RootLayout({
         redirect();
       }
     };
+
+    // ২. মাউসের রাইট-ক্লিক (Inspect মেনو আসার পথ বন্ধ করতে) - ইচ্ছে হলে রাখতে পারেন
+    const preventContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      redirect();
+    };
+
     window.addEventListener("keydown", preventShortcuts);
+    window.addEventListener("contextmenu", preventContextMenu);
 
     return () => {
-      clearTimeout(startTimeout);
-      if ((window as any).__devToolsInterval) clearInterval((window as any).__devToolsInterval);
       window.removeEventListener("keydown", preventShortcuts);
+      window.removeEventListener("contextmenu", preventContextMenu);
     };
   }, []);
 
