@@ -6,20 +6,43 @@ import "./globals.css";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // DevTools ডিটেক্ট করার জন্য টাইম চেক
-    const checkDevTools = () => {
-      const start = performance.now();
-      // debugger কল করলে DevTools খোলা থাকলে ব্রাউজার স্লো হয়ে যাবে
-      debugger;
-      const end = performance.now();
+    const threshold = 60;
+    let redirected = false;
 
-      // DevTools খোলা থাকলে এক্সিকিউশন টাইম বেড়ে যায় (> 100ms)
-      if (end - start > 100) {
+    const redirect = () => {
+      if (!redirected) {
+        redirected = true;
         window.location.replace('about:blank');
       }
     };
 
-    // কিবোর্ড শর্টকাট ব্লক এবং রিডাইরেক্ট (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+    // পদ্ধতি ১: সাইজ চেক (DevTools ডক করা থাকলে ধরে)
+    const checkSize = () => {
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      if (widthDiff > threshold || heightDiff > threshold) {
+        redirect();
+      }
+    };
+
+    // পদ্ধতি ২: টাইমিং চেক (আন-ডক করা DevTools ধরে)
+    const checkTiming = () => {
+      const start = performance.now();
+      // eslint-disable-next-line no-debugger
+      debugger;
+      const end = performance.now();
+      if (end - start > 100) {
+        redirect();
+      }
+    };
+
+    const interval = setInterval(() => {
+      checkSize();
+      checkTiming();
+    }, 1000); // ২০০ms থেকে বাড়িয়ে ১০০০ms করা হলো — বারবার freeze এড়াতে
+
+    checkSize(); // পেজ লোডেই একবার
+
     const preventShortcuts = (e: KeyboardEvent) => {
       if (
         e.key === 'F12' ||
@@ -27,14 +50,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         (e.ctrlKey && e.key.toUpperCase() === 'U')
       ) {
         e.preventDefault();
-        window.location.replace('about:blank');
+        redirect();
       }
     };
-
-    // কনসোল ক্লিয়ারিং এবং নিয়মিত লুপ চেক
-    const interval = setInterval(() => {
-      checkDevTools();
-    }, 200);
 
     window.addEventListener('keydown', preventShortcuts);
 
