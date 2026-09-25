@@ -1,5 +1,6 @@
 useEffect(() => {
   let redirected = false;
+
   const redirect = () => {
     if (!redirected) {
       redirected = true;
@@ -7,33 +8,26 @@ useEffect(() => {
     }
   };
 
-  // ১. কেবল ইনস্পেক্ট ওপেন হলে ডিটেক্ট করার জন্য
+  // ১. কেবল Inspect / DevTools খোলা থাকলে ডিটেক্ট করবে
   const detectInspect = () => {
     const threshold = 160;
     
-    // DevTools ডক করা থাকলে
-    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+    // ব্রাউজারের সাথে DevTools ডক/যুক্ত থাকলে
+    const widthDiff = window.outerWidth - window.innerWidth;
+    const heightDiff = window.outerHeight - window.innerHeight;
 
-    // পিসিতে F12/Inspect দিয়ে আলাদা উইন্ডোতে DevTools খুললে
-    const isConsoleOpen = () => {
-      const startTime = performance.now();
-      // debugger কেবল কনসোল/ইনস্পেক্ট খোলা থাকলেই কাজ করবে
-      debugger; 
-      return performance.now() - startTime > 100;
-    };
-
-    if (widthThreshold || heightThreshold) {
+    if (widthDiff > threshold || heightDiff > threshold) {
       redirect();
     }
   };
 
-  // ২. শর্টকাট কী ব্লক (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U)
+  // ২. শর্টকাট কী (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S) চাপলে ব্লক করবে
   const preventShortcuts = (e: KeyboardEvent) => {
+    const key = e.key.toUpperCase();
     if (
       e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) ||
-      (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
+      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(key)) ||
+      (e.ctrlKey && ['U', 'S'].includes(key))
     ) {
       e.preventDefault();
       redirect();
@@ -45,11 +39,11 @@ useEffect(() => {
     e.preventDefault();
   };
 
-  // ইভেন্ট লিসেনার যুক্ত করা
+  // ইভেন্ট লিসেনার যোগ করা
   window.addEventListener('keydown', preventShortcuts);
   window.addEventListener('contextmenu', preventContextMenu);
   
-  // ১ সেকেন্ড পর পর চেক করবে (যাতে সাইট লোড হতে কোনো সমস্যা না হয়)
+  // ১ সেকেন্ড পরপর সাইজ চেক করবে
   const interval = setInterval(detectInspect, 1000);
 
   return () => {
