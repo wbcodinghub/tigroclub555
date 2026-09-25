@@ -1,50 +1,51 @@
-useEffect(() => {
-  let redirected = false;
-  const redirect = () => {
-    if (!redirected) {
-      redirected = true;
-      window.location.replace('about:blank');
-    }
-  };
+"use client";
 
-  // ১. শতভাগ কার্যকর DevTools ডিটেক্টর (Debugger Time Trap)
-  const detectDevTools = () => {
-    const start = performance.now();
-    // DevTools খোলা থাকলে ব্রাউজার পজ হবে, ফলে সময় ১০ মিলি-সেকেন্ডের বেশি লেগে যাবে
-    debugger; 
-    const end = performance.now();
+import { useEffect } from "react";
 
-    if (end - start > 100) {
-      redirect();
-    }
-  };
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  useEffect(() => {
+    let redirected = false;
+    const redirect = () => {
+      if (!redirected) {
+        redirected = true;
+        window.location.replace("about:blank");
+      }
+    };
 
-  // প্রতি ১ সেকেন্ড পরপর চেক করবে
-  const interval = setInterval(detectDevTools, 1000);
+    // ১. কিবোর্ড শর্টকাট ব্লক (F12, Ctrl+Shift+I/J/C, Ctrl+U)
+    const preventShortcuts = (e: KeyboardEvent) => {
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && e.key.toUpperCase() === "U")
+      ) {
+        e.preventDefault();
+        redirect();
+      }
+    };
 
-  // ২. কী-বোর্ড শর্টকাট ব্লক
-  const preventShortcuts = (e: KeyboardEvent) => {
-    if (
-      e.key === 'F12' ||
-      (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) ||
-      (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key))
-    ) {
+    // ২. মাউসের রাইট-ক্লিক ব্লক (যাতে কেউ রাইট-ক্লিক করে Inspect এ যেতে না পারে)
+    const preventContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       redirect();
-    }
-  };
+    };
 
-  // ৩. রাইট-ক্লিক (Inspect Element) ব্লক
-  const preventContextMenu = (e: MouseEvent) => {
-    e.preventDefault();
-  };
+    window.addEventListener("keydown", preventShortcuts);
+    window.addEventListener("contextmenu", preventContextMenu);
 
-  window.addEventListener('keydown', preventShortcuts);
-  window.addEventListener('contextmenu', preventContextMenu);
+    return () => {
+      window.removeEventListener("keydown", preventShortcuts);
+      window.removeEventListener("contextmenu", preventContextMenu);
+    };
+  }, []);
 
-  return () => {
-    clearInterval(interval);
-    window.removeEventListener('keydown', preventShortcuts);
-    window.removeEventListener('contextmenu', preventContextMenu);
-  };
-}, []);
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
