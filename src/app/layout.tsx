@@ -8,20 +8,26 @@ useEffect(() => {
     }
   };
 
-  // ১. কেবল Inspect / DevTools খোলা থাকলে ডিটেক্ট করবে
+  // ১. ইনস্পেক্ট / DevTools খোলা থাকলে ডিটেক্ট করার লজিক
   const detectInspect = () => {
     const threshold = 160;
-    
-    // ব্রাউজারের সাথে DevTools ডক/যুক্ত থাকলে
-    const widthDiff = window.outerWidth - window.innerWidth;
-    const heightDiff = window.outerHeight - window.innerHeight;
 
-    if (widthDiff > threshold || heightDiff > threshold) {
+    // DevTools ডক/যুক্ত অবস্থায় থাকলে (Width/Height Diff)
+    const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+    const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+
+    // আলাদা উইন্ডোতে (Undocked) DevTools খোলা থাকলে তা ডিটেক্ট করার জন্য
+    const start = performance.now();
+    // debugger কেবল কনসোল/ইনস্পেক্ট খোলা থাকলেই ব্রাউজারকে স্লো করে
+    eval('debugger'); 
+    const isUndockedOpen = performance.now() - start > 100;
+
+    if (widthThreshold || heightThreshold || isUndockedOpen) {
       redirect();
     }
   };
 
-  // ২. শর্টকাট কী (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S) চাপলে ব্লক করবে
+  // ২. কী-বোর্ড শর্টকাট ব্লক (F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S)
   const preventShortcuts = (e: KeyboardEvent) => {
     const key = e.key.toUpperCase();
     if (
@@ -39,11 +45,11 @@ useEffect(() => {
     e.preventDefault();
   };
 
-  // ইভেন্ট লিসেনার যোগ করা
+  // ইভেন্ট লিসেনারগুলো যুক্ত করা
   window.addEventListener('keydown', preventShortcuts);
   window.addEventListener('contextmenu', preventContextMenu);
-  
-  // ১ সেকেন্ড পরপর সাইজ চেক করবে
+
+  // ১ সেকেন্ড পরপর ডিটেক্ট করবে
   const interval = setInterval(detectInspect, 1000);
 
   return () => {
