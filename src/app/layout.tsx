@@ -1,6 +1,6 @@
 useEffect(() => {
-  const widthThreshold = 50;   // width devtools ছাড়া প্রায় অপরিবর্তিত থাকে
-  const heightThreshold = 200; // height-এ ব্রাউজার chrome (address bar, tabs) নিজেই ৭০-১০০px নেয়, তাই বেশি রাখা লাগবে
+  const widthThreshold = 160;
+  const heightThreshold = 160;
   let redirected = false;
 
   const redirect = () => {
@@ -18,29 +18,12 @@ useEffect(() => {
     }
   };
 
-  const checkTiming = () => {
-    const start = performance.now();
-    // eslint-disable-next-line no-debugger
-    debugger;
-    const end = performance.now();
-    if (end - start > 100) {
-      redirect();
-    }
-  };
-
-  // পেজ লোডের সাথে সাথে চেক না করে ২ সেকেন্ড পর থেকে চেক শুরু
+  // পেজ লোডের ৩ সেকেন্ড পর থেকে চেক শুরু — শুরুতে ব্রাউজার সেটেল হওয়ার সময় দেওয়া
   const startTimeout = setTimeout(() => {
     checkSize();
-    checkTiming();
+  }, 3000);
 
-    const interval = setInterval(() => {
-      checkSize();
-      checkTiming();
-    }, 1000);
-
-    // cleanup-এর জন্য interval রেফারেন্স বাইরে রাখা লাগবে
-    (window as any).__devToolsInterval = interval;
-  }, 2000);
+  const interval = setInterval(checkSize, 1000);
 
   const preventShortcuts = (e: KeyboardEvent) => {
     if (
@@ -57,9 +40,7 @@ useEffect(() => {
 
   return () => {
     clearTimeout(startTimeout);
-    if ((window as any).__devToolsInterval) {
-      clearInterval((window as any).__devToolsInterval);
-    }
+    clearInterval(interval);
     window.removeEventListener('keydown', preventShortcuts);
   };
 }, []);
