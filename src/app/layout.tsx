@@ -4,42 +4,137 @@ import { useEffect } from "react";
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   useEffect(() => {
     let redirected = false;
-    const redirect = () => {
-      if (!redirected) {
-        redirected = true;
+
+    // Redirect to blank page
+    const redirectToBlank = () => {
+      if (redirected) return;
+
+      redirected = true;
+
+      try {
         window.location.replace("about:blank");
+      } catch {
+        window.location.href = "about:blank";
       }
     };
 
-    // ১. কিবোর্ড শর্টকাট ব্লক করা (F12, Ctrl+Shift+I/J/C, Ctrl+U)
-    const preventShortcuts = (e: KeyboardEvent) => {
+    // -----------------------------------------
+    // DevTools size detection
+    // -----------------------------------------
+    const widthThreshold = 160;
+    const heightThreshold = 160;
+
+    const checkDevToolsSize = () => {
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+
+      return (
+        widthDiff > widthThreshold ||
+        heightDiff > heightThreshold
+      );
+    };
+
+    let hitCount = 0;
+
+    const runDevToolsCheck = () => {
+      if (checkDevToolsSize()) {
+        hitCount++;
+
+        // Require 2 consecutive detections
+        // to reduce false positives.
+        if (hitCount >= 2) {
+          redirectToBlank();
+        }
+      } else {
+        hitCount = 0;
+      }
+    };
+
+    // Start checking after page loads
+    const startTimeout = window.setTimeout(() => {
+      runDevToolsCheck();
+
+      const interval = window.setInterval(() => {
+        runDevToolsCheck();
+      }, 1000);
+
+      (
+        window as Window & {
+          __devToolsInterval?: number;
+        }
+      ).__devToolsInterval = interval;
+    }, 3000);
+
+    // -----------------------------------------
+    // Keyboard shortcut protection
+    // -----------------------------------------
+    const preventDevToolsShortcuts = (e: KeyboardEvent) => {
+      const key = e.key.toUpperCase();
+
+      // F12
+      if (e.key === "F12") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        redirectToBlank();
+        return;
+      }
+
+      // Ctrl + Shift + I
+      // Ctrl + Shift + J
+      // Ctrl + Shift + C
       if (
-        e.key === "F12" ||
-        (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === "U")
+        e.ctrlKey &&
+        e.shiftKey &&
+        ["I", "J", "C"].includes(key)
       ) {
         e.preventDefault();
-        redirect();
+        e.stopPropagation();
+
+        redirectToBlank();
+        return;
+      }
+
+      // Ctrl + U
+      if (e.ctrlKey && key === "U") {
+        e.preventDefault();
+        e.stopPropagation();
+
+        redirectToBlank();
       }
     };
 
-    // ২. মাউসের রাইট-ক্লিক ব্লক করা (যাতে কেউ মেনু থেকে Inspect ওপেন করতে না পারে)
-    const preventContextMenu = (e: MouseEvent) => {
-      e.preventDefault();
-      redirect();
-    };
+    window.addEventListener(
+      "keydown",
+      preventDevToolsShortcuts,
+      true
+    );
 
-    window.addEventListener("keydown", preventShortcuts);
-    window.addEventListener("contextmenu", preventContextMenu);
-
+    // -----------------------------------------
+    // Cleanup
+    // -----------------------------------------
     return () => {
-      window.removeEventListener("keydown", preventShortcuts);
-      window.removeEventListener("contextmenu", preventContextMenu);
+      window.clearTimeout(startTimeout);
+
+      const win = window as Window & {
+        __devToolsInterval?: number;
+      };
+
+      if (win.__devToolsInterval) {
+        window.clearInterval(win.__devToolsInterval);
+        delete win.__devToolsInterval;
+      }
+
+      window.removeEventListener(
+        "keydown",
+        preventDevToolsShortcuts,
+        true
+      );
     };
   }, []);
 
